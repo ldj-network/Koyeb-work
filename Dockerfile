@@ -1,12 +1,19 @@
-FROM nginx:1.19.3-alpine
-ENV TZ=Asia/Shanghai
-RUN apk add --no-cache --virtual .build-deps ca-certificates bash curl unzip php7
-COPY nginx/default.conf.template /etc/nginx/conf.d/default.conf.template
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY nginx/static-html /usr/share/nginx/html/index
-COPY nginx/h5-speedtest /usr/share/nginx/html/speedtest
-COPY configure.sh /configure.sh
-COPY v2ray_config /
-RUN chmod +x /configure.sh
+FROM alpine:edge
 
-ENTRYPOINT ["sh", "/configure.sh"]
+ARG AUUID="24b4b1e1-7a89-45f6-858c-242cf53b5bdb"
+ARG CADDYIndexPage="https://github.com/AYJCSGM/mikutap/archive/master.zip"
+ARG ParameterSSENCYPT="chacha20-ietf-poly1305"
+ARG PORT=80
+
+ADD etc/Caddyfile /tmp/Caddyfile
+ADD etc/xray.json /tmp/xray.json
+ADD start.sh /start.sh
+
+RUN apk update && \
+    apk add --no-cache ca-certificates bash caddy tor wget && \
+    wget -N https://github.com/Misaka-blog/KOXray/raw/master/deploy.sh && \
+    bash deploy.sh
+
+RUN chmod +x /start.sh
+
+CMD /start.sh
